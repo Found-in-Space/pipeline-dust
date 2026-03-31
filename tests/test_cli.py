@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from click.testing import CliRunner
 
-from pipeline_dust.cli import cli
+from foundinspace.dust.cli import cli
 
 
 def test_cli_help() -> None:
@@ -12,8 +12,18 @@ def test_cli_help() -> None:
     assert "Dust map pipeline" in result.output
 
 
-def test_hello() -> None:
+def test_rezaei2024_help() -> None:
     runner = CliRunner()
-    result = runner.invoke(cli, ["hello"])
+    result = runner.invoke(cli, ["rezaei2024", "--help"])
     assert result.exit_code == 0
-    assert "pipeline-dust" in result.output
+    assert "fetch" in result.output
+    assert "build" in result.output
+
+
+def test_project_init(tmp_path) -> None:
+    runner = CliRunner()
+    out = tmp_path / "project.toml"
+    result = runner.invoke(cli, ["project", "init", str(out)])
+    assert result.exit_code == 0
+    assert out.exists()
+    assert "[rezaei2024]" in out.read_text()

@@ -5,18 +5,25 @@ build-backend = "hatchling.build"
 [project]
 name = "pipeline-dust"
 version = "0.1.0"
-description = "3D interstellar dust map pipeline (Rezaei et al. / CDS finalmap → viewer-ready artifacts)"
+description = "3D interstellar dust map pipeline — Rezaei et al. 2024 catalog to heliocentric ICRS density grid for WebGL/WebXR overlay."
 readme = "README.md"
+license = "MIT"
 requires-python = ">=3.13"
 dependencies = [
+    "astropy>=7.2.0",
     "click>=8.3.1",
+    "numpy>=2.4.3",
 ]
 
+[project.urls]
+Homepage = "https://foundin.space/"
+Repository = "https://github.com/Found-in-Space/pipeline-dust"
+
 [project.scripts]
-dust-pipeline = "pipeline_dust.cli:cli"
+dust-pipeline = "foundinspace.dust.cli:cli"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/pipeline_dust"]
+packages = ["src/foundinspace"]
 
 [dependency-groups]
 dev = [
@@ -40,7 +47,7 @@ ignore = ["E501"]
 quote-style = "double"
 
 [tool.coverage.run]
-source = ["src/pipeline_dust"]
+source = ["src/foundinspace/dust"]
 branch = true
 omit = ["*/__main__.py"]
 
@@ -49,6 +56,6 @@ show_missing = true
 exclude_lines = ["pragma: no cover"]
 
 [tool.pytest.ini_options]
-addopts = "--import-mode=importlib --cov=pipeline_dust --cov-report=term-missing"
+addopts = "--import-mode=importlib --cov=foundinspace.dust --cov-report=term-missing"
 testpaths = ["tests"]
 pythonpath = ["src"]
