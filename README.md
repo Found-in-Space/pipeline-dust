@@ -1,6 +1,6 @@
 # Found in Space — Dust Pipeline
 
-Part of [Found in Space](https://foundin.space/), a project that turns real astronomical measurements into interactive explorations of the solar neighbourhood.
+Part of [Found in Space](https://foundin.space/), a project that turns real astronomical measurements into interactive explorations of the solar neighbourhood. See all repositories at [github.com/Found-in-Space](https://github.com/Found-in-Space).
 
 This repository is the **dust pipeline**: it fetches the Rezaei Kh. et al. 2024 3D dust map from CDS and builds `dust_map.bin` — a compact float32 binary of interstellar dust density, positioned in the same heliocentric ICRS frame as the star catalogue, ready for WebGL/WebXR overlay.
 
@@ -8,7 +8,7 @@ This repository is the **dust pipeline**: it fetches the Rezaei Kh. et al. 2024 
 DOI: [10.1051/0004-6361/202451424](https://doi.org/10.1051/0004-6361/202451424) ·
 VizieR: [J/A+A/692/A255](https://cdsarc.cds.unistra.fr/ftp/J/A+A/692/A255)
 
-Sibling of [Found in Space — Pipeline](https://github.com/Found-in-Space/pipeline), sharing the `foundinspace.*` namespace, tooling (uv, Ruff, pytest), and [project-file convention](#project-files).
+Sibling of [Found-in-Space/pipeline](https://github.com/Found-in-Space/pipeline), sharing the `foundinspace.*` namespace, tooling (uv, Ruff, pytest), and [project-file convention](#project-files).
 
 ---
 
@@ -49,7 +49,7 @@ single source of truth for catalog/output paths. Generate a starter file with
 
 Because unknown top-level TOML sections are silently ignored by each pipeline,
 a single `project.toml` can hold both the `[gaia]` / `[hip]` / `[merge]`
-sections for [fis-pipeline](https://github.com/Found-in-Space/pipeline) and the `[rezaei2024]` section for
+sections for [Found-in-Space/pipeline](https://github.com/Found-in-Space/pipeline) and the `[rezaei2024]` section for
 **dust-pipeline**:
 
 ```toml
@@ -87,7 +87,7 @@ Binary layout (little-endian float32):
 | 16 + i×16 | `float32` | Density (cm⁻³) |
 
 Coordinates are **heliocentric ICRS Cartesian parsecs**, matching the star
-catalogue produced by the [star pipeline](https://github.com/Found-in-Space/pipeline). Grid half-size is half the
+catalogue produced by [Found-in-Space/pipeline](https://github.com/Found-in-Space/pipeline). Grid half-size is half the
 median nearest-neighbour distance in the point cloud, so rendered cubes fill
 the volume without gaps.
 
