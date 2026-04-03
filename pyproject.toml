@@ -5,12 +5,11 @@ build-backend = "hatchling.build"
 [project]
 name = "pipeline-dust"
 version = "0.1.0"
-description = "3D interstellar dust map pipeline — Rezaei et al. 2024 catalog to heliocentric ICRS density grid for WebGL/WebXR overlay."
+description = "3D interstellar dust map pipeline — Rezaei et al. 2024 catalog to Galactic voxel texture (dust_map_ng.bin) for WebGL/WebXR overlay."
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.13"
 dependencies = [
-    "astropy>=7.2.0",
     "click>=8.3.1",
     "numpy>=2.4.3",
 ]

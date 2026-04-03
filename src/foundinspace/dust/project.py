@@ -9,8 +9,8 @@ Example project.toml
 format_version = 1
 
 [rezaei2024]
-catalog_gz  = "data/catalogs/finalmap.dat.gz"
-output_bin  = "data/processed/dust_map.bin"
+catalog_gz = "data/catalogs/finalmap.dat.gz"
+output_bin = "data/processed/dust_map_ng.bin"
 """
 
 from __future__ import annotations
@@ -75,14 +75,6 @@ class _SectionAccessor:
             self._project_dir, value, field_name=f"{self._section}.{key}"
         )
 
-    def _optional_path(self, key: str) -> Path | None:
-        if self._raw is None or key not in self._raw:
-            return None
-        value = _require_str(self._raw, key, field_name=f"{self._section}.{key}")
-        return _resolve_path(
-            self._project_dir, value, field_name=f"{self._section}.{key}"
-        )
-
 
 class Rezaei2024Config(_SectionAccessor):
     """Configuration for the Rezaei et al. 2024 dust map source."""
@@ -94,7 +86,7 @@ class Rezaei2024Config(_SectionAccessor):
 
     @property
     def output_bin(self) -> Path:
-        """Path for the built dust_map.bin artifact."""
+        """Path for the built dust_map_ng.bin artifact."""
         return self._require_path("output_bin")
 
 
@@ -161,5 +153,5 @@ def render_project_template() -> str:
         f"format_version = {FORMAT_VERSION}\n\n"
         "[rezaei2024]\n"
         'catalog_gz = "data/catalogs/finalmap.dat.gz"\n'
-        'output_bin = "data/processed/dust_map.bin"\n'
+        'output_bin = "data/processed/dust_map_ng.bin"\n'
     )

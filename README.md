@@ -1,14 +1,14 @@
 # Found in Space — Dust Pipeline
 
-Part of [Found in Space](https://foundin.space/), a project that turns real astronomical measurements into interactive explorations of the solar neighbourhood. See all repositories at [github.com/Found-in-Space](https://github.com/Found-in-Space).
+Part of [Found in Space](https://foundin.space/), a project that turns real astronomical measurements into interactive explorations of the solar neighbourhood. Source code and companion repositories live in the [Found-in-Space](https://github.com/Found-in-Space) GitHub organization.
 
-This repository is the **dust pipeline**: it fetches the Rezaei Kh. et al. 2024 3D dust map from CDS and builds `dust_map.bin` — a compact float32 binary of interstellar dust density, positioned in the same heliocentric ICRS frame as the star catalogue, ready for WebGL/WebXR overlay.
+This repository is the **dust pipeline**: it fetches the Rezaei Kh. et al. 2024 3D dust map from CDS and builds `dust_map_ng.bin` — a compact Galactic voxel texture of interstellar dust density for WebGL/WebXR overlay.
 
 **Source data:** Rezaei Kh. S. et al. (2024) — "3D structure of the Milky Way out to 10 kpc from the Sun", *Astron. Astrophys.* 692, A255.
 DOI: [10.1051/0004-6361/202451424](https://doi.org/10.1051/0004-6361/202451424) ·
 VizieR: [J/A+A/692/A255](https://cdsarc.cds.unistra.fr/ftp/J/A+A/692/A255)
 
-Sibling of [Found-in-Space/pipeline](https://github.com/Found-in-Space/pipeline), sharing the `foundinspace.*` namespace, tooling (uv, Ruff, pytest), and [project-file convention](#project-files).
+This package shares the `foundinspace` namespace layout with other repositories in the organization, uses uv, Ruff, and pytest, and follows the [project-file convention](#project-files).
 
 ---
 
@@ -29,7 +29,7 @@ dust-pipeline project init project.toml
 # Fetch the catalog (~400 MB)
 dust-pipeline rezaei2024 fetch --project project.toml
 
-# Build dust_map.bin
+# Build dust_map_ng.bin
 dust-pipeline rezaei2024 build --project project.toml
 ```
 
@@ -47,26 +47,18 @@ All commands require `--project path/to/project.toml`. The project file is the
 single source of truth for catalog/output paths. Generate a starter file with
 `dust-pipeline project init project.toml`.
 
-Because unknown top-level TOML sections are silently ignored by each pipeline,
-a single `project.toml` can hold both the `[gaia]` / `[hip]` / `[merge]`
-sections for [Found-in-Space/pipeline](https://github.com/Found-in-Space/pipeline) and the `[rezaei2024]` section for
-**dust-pipeline**:
+Unknown top-level tables that **dust-pipeline** does not read are ignored, so
+the same `project.toml` can also contain sections for
+[Found-in-Space/pipeline](https://github.com/Found-in-Space/pipeline) (for example `[gaia]`, `[hip]`). Keys and semantics
+for those tables belong in that repository’s docs — this project only loads
+`[rezaei2024]`.
 
 ```toml
 format_version = 1
 
-# fis-pipeline sections
-[gaia]
-output_dir = "data/processed/gaia"
-
-[hip]
-download_ecsv = "data/catalogs/hipparcos2.ecsv"
-output_parquet = "data/processed/hip_stars.parquet"
-
-# dust-pipeline section
 [rezaei2024]
 catalog_gz = "data/catalogs/finalmap.dat.gz"
-output_bin = "data/processed/dust_map.bin"
+output_bin = "data/processed/dust_map_ng.bin"
 ```
 
 Path values may be absolute or relative to the project file's directory.
@@ -74,22 +66,40 @@ Environment-variable syntax (`$VAR`) is rejected.
 
 ---
 
-## Output format — `dust_map.bin`
+## Artifacts
 
-Binary layout (little-endian float32):
+The build step produces **`dust_map_ng.bin`**: a shader-facing Galactic voxel
+texture derived from the published catalog (`finalmap.dat.gz`).
 
-| Offset | Type | Description |
-|--------|------|-------------|
-| 0 | `float32` | Grid cell half-size in parsecs |
-| 4 + i×16 | `float32` | X (ICRS pc) |
-| 8 + i×16 | `float32` | Y (ICRS pc) |
-| 12 + i×16 | `float32` | Z (ICRS pc) |
-| 16 + i×16 | `float32` | Density (cm⁻³) |
+## Output format — `dust_map_ng.bin`
 
-Coordinates are **heliocentric ICRS Cartesian parsecs**, matching the star
-catalogue produced by [Found-in-Space/pipeline](https://github.com/Found-in-Space/pipeline). Grid half-size is half the
-median nearest-neighbour distance in the point cloud, so rendered cubes fill
-the volume without gaps.
+Header (48 bytes), followed by `NX * NY * NZ` bytes of density samples:
+
+| Byte range | Type | Description |
+|------------|------|-------------|
+| 0-3 | `uint32` | `NX` |
+| 4-7 | `uint32` | `NY` |
+| 8-11 | `uint32` | `NZ` |
+| 12-15 | `float32` | `max_density` (cm⁻³, mapped to uint8 255) |
+| 16-19 | `float32` | `min_x` (Galactic pc) |
+| 20-23 | `float32` | `max_x` (Galactic pc) |
+| 24-27 | `float32` | `min_y` (Galactic pc) |
+| 28-31 | `float32` | `max_y` (Galactic pc) |
+| 32-35 | `float32` | `min_z` (Galactic pc) |
+| 36-39 | `float32` | `max_z` (Galactic pc) |
+| 40-47 | reserved | zeros |
+
+Data layout:
+
+- `uint8 density[iz, iy, ix]`
+- Galactic Cartesian, heliocentric
+- `x` varies fastest
+- X/Y use 100 pc spacing
+- Z uses the five published layers at `-750, -375, 0, +375, +750 pc`
+
+The voxel texture is intentionally Galactic-native. Viewer code is responsible
+for mapping Galactic sample space into whatever world or sky orientation it
+needs.
 
 ---
 
@@ -103,10 +113,9 @@ src/foundinspace/dust/
   project.py          # load_project, DustProject, Rezaei2024Config
   project_cli.py      # dust-pipeline project init
   rezaei2024/
-    __init__.py
     cli.py            # rezaei2024 fetch, rezaei2024 build
     fetch.py          # fetch_catalog — download finalmap.dat.gz from CDS
-    build.py          # build_dust_map_bin, parse_finalmap, galactic_to_icrs
+    build.py          # build_dust_map_bin, parse_finalmap_raw
 ```
 
 ---

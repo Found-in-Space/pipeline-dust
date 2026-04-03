@@ -46,7 +46,7 @@ def fetch(project_path: Path, force: bool) -> None:
 )
 @click.option("--force", "-f", is_flag=True, default=False)
 def build(project_path: Path, force: bool) -> None:
-    """Build dust_map.bin from finalmap.dat.gz."""
+    """Build dust_map_ng.bin from finalmap.dat.gz."""
     from foundinspace.dust.rezaei2024.build import build_dust_map_bin
 
     project = _load_project_or_die(project_path)

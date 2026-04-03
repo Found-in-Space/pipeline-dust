@@ -27,7 +27,7 @@ Hooks: `ruff-check` (lint + fix) and `ruff-format`, scoped to `src/` and `tests/
 - `uv run dust-pipeline project init project.toml`
 - `uv run dust-pipeline rezaei2024 fetch --project project.toml`
 - `uv run dust-pipeline rezaei2024 build --project project.toml`
-- `uv run pytest tests/test_build.py`
+- `uv run pytest`
 
 ## Package layout
 
@@ -38,8 +38,9 @@ Hooks: `ruff-check` (lint + fix) and `ruff-format`, scoped to `src/` and `tests/
 ## Data / project files
 
 Each command takes `--project path/to/project.toml`. The file may contain only
-`[rezaei2024]` or mix in `[gaia]` / `[hip]` sections for fis-pipeline. Unknown
-top-level sections are silently ignored by each pipeline's loader.
+`[rezaei2024]` or share a TOML with fis-pipeline sections (e.g. `[gaia]`,
+`[hip]`). This loader ignores unknown top-level tables; see fis-pipeline for
+what it reads.
 
 DO NOT run fetch or build commands unless explicitly asked. These download large
 files (~400 MB) and write to wherever `output_bin` / `catalog_gz` point.

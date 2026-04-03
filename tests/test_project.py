@@ -17,7 +17,7 @@ def _project_text() -> str:
         "format_version = 1\n\n"
         "[rezaei2024]\n"
         'catalog_gz = "data/catalogs/finalmap.dat.gz"\n'
-        'output_bin = "data/processed/dust_map.bin"\n'
+        'output_bin = "data/processed/dust_map_ng.bin"\n'
     )
 
 
@@ -32,7 +32,7 @@ def test_load_project_resolves_relative_paths(tmp_path: Path) -> None:
     )
     assert (
         project.rezaei2024.output_bin
-        == tmp_path / "data" / "processed" / "dust_map.bin"
+        == tmp_path / "data" / "processed" / "dust_map_ng.bin"
     )
 
 

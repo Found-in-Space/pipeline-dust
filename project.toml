@@ -1,0 +1,5 @@
+format_version = 1
+
+[rezaei2024]
+catalog_gz = "data/catalogs/finalmap.dat.gz"
+output_bin = "data/processed/dust_map_ng.bin"
