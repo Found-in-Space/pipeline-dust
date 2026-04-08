@@ -2,7 +2,7 @@
 
 Part of [Found in Space](https://foundin.space/), a project that turns real astronomical measurements into interactive explorations of the solar neighbourhood. Source code and companion repositories live in the [Found-in-Space](https://github.com/Found-in-Space) GitHub organization.
 
-This repository is the **dust pipeline**: it fetches the Rezaei Kh. et al. 2024 3D dust map from CDS and builds `dust_map_ng.bin` — a compact Galactic voxel texture of interstellar dust density for WebGL/WebXR overlay. It also contains the early McCallum et al. 2025 H-alpha source-data acquisition steps used for the upcoming local emissivity volume pipeline.
+This repository is the **dust pipeline**: it fetches the Rezaei Kh. et al. 2024 3D dust map from CDS and builds `dust_map_ng.bin` — a compact Galactic voxel texture of interstellar dust density for WebGL/WebXR overlay. It also builds the McCallum et al. 2025 H-alpha source into fixed-grid gzip tiles for SkyKit's single-texture volume renderer.
 
 **Source data:** Rezaei Kh. S. et al. (2024) — "3D structure of the Milky Way out to 10 kpc from the Sun", *Astron. Astrophys.* 692, A255.
 DOI: [10.1051/0004-6361/202451424](https://doi.org/10.1051/0004-6361/202451424) ·
@@ -34,6 +34,9 @@ dust-pipeline rezaei2024 build --project project.toml
 
 # Download McCallum et al. 2025 H-alpha FITS sources from Zenodo
 dust-pipeline mccallum2025 download --project project.toml
+
+# Build fixed-grid gzip H-alpha tiles for single-texture runtime refinement
+dust-pipeline mccallum2025 build-tiled-volume --project project.toml
 ```
 
 Or as a module:
@@ -84,6 +87,21 @@ The McCallum download step downloads the pinned Zenodo record into `raw_dir` and
 - `files.lock.json`: downloaded file names, source URLs, checksums, DOI metadata, and download time
 
 Downloaded files are skipped when already present and checksum-valid. Use `--force` to refresh them.
+
+The McCallum fixed-grid tiled volume step reads the full `ha_grid.fits` cube and
+writes one self-describing gzip-tiled file per level:
+
+```bash
+dust-pipeline mccallum2025 build-tiled-volume --project project.toml \
+  --out-dir ../skykit/public/volumes/mccallum2025/ha_tiled
+```
+
+The default artifact contains `l0` through `l4`, each split into the same
+`4 x 4 x 4` world-space tile grid. Each level file starts with a binary header
+and Morton-ordered tile table, followed by independently gzip-compressed `uint8`
+tile payloads. By default each tile payload includes a one-voxel halo from its
+neighbors. SkyKit loads an initial level first, range-requests final-level tiles
+as needed, and splices the tile payloads into one rendered 3D texture.
 
 ## Output format — `dust_map_ng.bin`
 
