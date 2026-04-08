@@ -30,6 +30,7 @@ class LazyGroup(click.Group):
 @click.group(
     cls=LazyGroup,
     lazy_subcommands={
+        "mccallum2025": "foundinspace.dust.mccallum2025.cli:cli",
         "rezaei2024": "foundinspace.dust.rezaei2024.cli:cli",
         "project": "foundinspace.dust.project_cli:cli",
     },

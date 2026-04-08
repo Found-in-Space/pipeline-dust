@@ -1,6 +1,6 @@
 """Project-file loader for pipeline-dust.
 
-Reads a TOML project file containing a [rezaei2024] section.  Paths are
+Reads a TOML project file containing dataset sections. Paths are
 resolved relative to the project file directory; env-variable syntax ($...)
 is rejected.
 
@@ -11,6 +11,10 @@ format_version = 1
 [rezaei2024]
 catalog_gz = "data/catalogs/finalmap.dat.gz"
 output_bin = "data/processed/dust_map_ng.bin"
+
+[mccallum2025]
+record_id = "15041318"
+raw_dir = "data/raw/zenodo/mccallum_2025"
 """
 
 from __future__ import annotations
@@ -24,6 +28,7 @@ import tomllib
 FORMAT_VERSION = 1
 
 _REZAEI2024_KEYS = {"catalog_gz", "output_bin"}
+_MCCALLUM2025_KEYS = {"record_id", "raw_dir"}
 
 
 def _reject_env_expansion(value: str, *, field_name: str) -> None:
@@ -90,15 +95,33 @@ class Rezaei2024Config(_SectionAccessor):
         return self._require_path("output_bin")
 
 
+class McCallum2025Config(_SectionAccessor):
+    """Configuration for the McCallum et al. 2025 H-alpha source data."""
+
+    @property
+    def record_id(self) -> str:
+        """Pinned Zenodo record id."""
+        if self._raw is None:
+            raise ValueError(f"Missing [{self._section}] table in project file")
+        return _require_str(self._raw, "record_id", field_name="mccallum2025.record_id")
+
+    @property
+    def raw_dir(self) -> Path:
+        """Directory for downloaded Zenodo files and provenance lockfiles."""
+        return self._require_path("raw_dir")
+
+
 @dataclass(frozen=True, slots=True)
 class DustProject:
     project_path: Path
     rezaei2024: Rezaei2024Config
+    mccallum2025: McCallum2025Config
 
     def require(self, *section_names: str) -> None:
         """Raise ValueError listing all missing required sections at once."""
         known: dict[str, _SectionAccessor] = {
             self.rezaei2024._section: self.rezaei2024,
+            self.mccallum2025._section: self.mccallum2025,
         }
         unknown = sorted(set(section_names) - set(known))
         if unknown:
@@ -142,9 +165,18 @@ def load_project(project_path: Path) -> DustProject:
             rezaei_raw, allowed=_REZAEI2024_KEYS, table_name="rezaei2024"
         )
 
+    mccallum_raw = raw.get("mccallum2025")
+    if mccallum_raw is not None:
+        if not isinstance(mccallum_raw, dict):
+            raise ValueError("Invalid [mccallum2025] table in project file")
+        _reject_unknown_keys(
+            mccallum_raw, allowed=_MCCALLUM2025_KEYS, table_name="mccallum2025"
+        )
+
     return DustProject(
         project_path=resolved,
         rezaei2024=Rezaei2024Config("rezaei2024", rezaei_raw, project_dir),
+        mccallum2025=McCallum2025Config("mccallum2025", mccallum_raw, project_dir),
     )
 
 
@@ -154,4 +186,8 @@ def render_project_template() -> str:
         "[rezaei2024]\n"
         'catalog_gz = "data/catalogs/finalmap.dat.gz"\n'
         'output_bin = "data/processed/dust_map_ng.bin"\n'
+        "\n"
+        "[mccallum2025]\n"
+        'record_id = "15041318"\n'
+        'raw_dir = "data/raw/zenodo/mccallum_2025"\n'
     )

@@ -221,7 +221,7 @@ def build_dust_map_bin(
     if not input_path.exists():
         raise FileNotFoundError(
             f"Missing {input_path.name}. "
-            "Run 'dust-pipeline rezaei2024 fetch --project PROJECT' first."
+            "Run 'dust-pipeline rezaei2024 download --project PROJECT' first."
         )
 
     if output_path.exists() and not force:

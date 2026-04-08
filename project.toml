@@ -3,3 +3,7 @@ format_version = 1
 [rezaei2024]
 catalog_gz = "data/catalogs/finalmap.dat.gz"
 output_bin = "data/processed/dust_map_ng.bin"
+
+[mccallum2025]
+record_id = "15041318"
+raw_dir = "data/raw/zenodo/mccallum_2025"

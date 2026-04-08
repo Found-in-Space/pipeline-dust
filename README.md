@@ -2,7 +2,7 @@
 
 Part of [Found in Space](https://foundin.space/), a project that turns real astronomical measurements into interactive explorations of the solar neighbourhood. Source code and companion repositories live in the [Found-in-Space](https://github.com/Found-in-Space) GitHub organization.
 
-This repository is the **dust pipeline**: it fetches the Rezaei Kh. et al. 2024 3D dust map from CDS and builds `dust_map_ng.bin` — a compact Galactic voxel texture of interstellar dust density for WebGL/WebXR overlay.
+This repository is the **dust pipeline**: it fetches the Rezaei Kh. et al. 2024 3D dust map from CDS and builds `dust_map_ng.bin` — a compact Galactic voxel texture of interstellar dust density for WebGL/WebXR overlay. It also contains the early McCallum et al. 2025 H-alpha source-data acquisition steps used for the upcoming local emissivity volume pipeline.
 
 **Source data:** Rezaei Kh. S. et al. (2024) — "3D structure of the Milky Way out to 10 kpc from the Sun", *Astron. Astrophys.* 692, A255.
 DOI: [10.1051/0004-6361/202451424](https://doi.org/10.1051/0004-6361/202451424) ·
@@ -26,11 +26,14 @@ dust-pipeline --help
 # Generate a starter project file
 dust-pipeline project init project.toml
 
-# Fetch the catalog (~400 MB)
-dust-pipeline rezaei2024 fetch --project project.toml
+# Download the catalog (~400 MB)
+dust-pipeline rezaei2024 download --project project.toml
 
 # Build dust_map_ng.bin
 dust-pipeline rezaei2024 build --project project.toml
+
+# Download McCallum et al. 2025 H-alpha FITS sources from Zenodo
+dust-pipeline mccallum2025 download --project project.toml
 ```
 
 Or as a module:
@@ -51,7 +54,7 @@ Unknown top-level tables that **dust-pipeline** does not read are ignored, so
 the same `project.toml` can also contain sections for
 [Found-in-Space/pipeline](https://github.com/Found-in-Space/pipeline) (for example `[gaia]`, `[hip]`). Keys and semantics
 for those tables belong in that repository’s docs — this project only loads
-`[rezaei2024]`.
+`[rezaei2024]` and `[mccallum2025]`.
 
 ```toml
 format_version = 1
@@ -59,6 +62,10 @@ format_version = 1
 [rezaei2024]
 catalog_gz = "data/catalogs/finalmap.dat.gz"
 output_bin = "data/processed/dust_map_ng.bin"
+
+[mccallum2025]
+record_id = "15041318"
+raw_dir = "data/raw/zenodo/mccallum_2025"
 ```
 
 Path values may be absolute or relative to the project file's directory.
@@ -70,6 +77,13 @@ Environment-variable syntax (`$VAR`) is rejected.
 
 The build step produces **`dust_map_ng.bin`**: a shader-facing Galactic voxel
 texture derived from the published catalog (`finalmap.dat.gz`).
+
+The McCallum download step downloads the pinned Zenodo record into `raw_dir` and writes:
+
+- `record.json`: the Zenodo record API response
+- `files.lock.json`: downloaded file names, source URLs, checksums, DOI metadata, and download time
+
+Downloaded files are skipped when already present and checksum-valid. Use `--force` to refresh them.
 
 ## Output format — `dust_map_ng.bin`
 
@@ -109,12 +123,12 @@ needs.
 src/foundinspace/dust/
   __init__.py
   __main__.py         # python -m foundinspace.dust entry
-  cli.py              # Click root; lazy subcommands rezaei2024, project
+  cli.py              # Click root; lazy subcommands rezaei2024, mccallum2025, project
   project.py          # load_project, DustProject, Rezaei2024Config
   project_cli.py      # dust-pipeline project init
   rezaei2024/
-    cli.py            # rezaei2024 fetch, rezaei2024 build
-    fetch.py          # fetch_catalog — download finalmap.dat.gz from CDS
+    cli.py            # rezaei2024 download, rezaei2024 build
+    download.py       # download_catalog — download finalmap.dat.gz from CDS
     build.py          # build_dust_map_bin, parse_finalmap_raw
 ```
 

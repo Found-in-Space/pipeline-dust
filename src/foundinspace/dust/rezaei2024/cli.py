@@ -18,7 +18,7 @@ def _load_project_or_die(project_path: Path) -> object:
     return load_project_or_die(project_path, "rezaei2024")
 
 
-@cli.command("fetch")
+@cli.command("download")
 @click.option(
     "--project",
     "project_path",
@@ -27,12 +27,12 @@ def _load_project_or_die(project_path: Path) -> object:
     help="Path to pipeline project TOML.",
 )
 @click.option("--force", "-f", is_flag=True, default=False)
-def fetch(project_path: Path, force: bool) -> None:
+def download(project_path: Path, force: bool) -> None:
     """Download finalmap.dat.gz from CDS."""
-    from foundinspace.dust.rezaei2024.fetch import fetch_catalog
+    from foundinspace.dust.rezaei2024.download import download_catalog
 
     project = _load_project_or_die(project_path)
-    out = fetch_catalog(project.rezaei2024.catalog_gz, force=force)
+    out = download_catalog(project.rezaei2024.catalog_gz, force=force)
     click.echo(f"Catalog ready at {out.resolve()}")
 
 

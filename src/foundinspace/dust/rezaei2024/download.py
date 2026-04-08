@@ -1,4 +1,4 @@
-"""Fetch the 3D Milky Way dust map from CDS (Rezaei Kh. et al. 2024).
+"""Download the 3D Milky Way dust map from CDS (Rezaei Kh. et al. 2024).
 
 Downloads finalmap.dat.gz — the 3D distribution of dust density across the
 Milky Way plane out to 10 kpc from the Sun, derived from APOGEE near-infrared
@@ -23,7 +23,7 @@ from pathlib import Path
 _URL = "https://cdsarc.cds.unistra.fr/ftp/J/A+A/692/A255/finalmap.dat.gz"
 
 
-def fetch_catalog(output_path: Path, *, force: bool = False) -> Path:
+def download_catalog(output_path: Path, *, force: bool = False) -> Path:
     """Download finalmap.dat.gz to *output_path*, returning the path.
 
     Skips the download if the file already exists and *force* is False.

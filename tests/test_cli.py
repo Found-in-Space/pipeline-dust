@@ -16,8 +16,15 @@ def test_rezaei2024_help() -> None:
     runner = CliRunner()
     result = runner.invoke(cli, ["rezaei2024", "--help"])
     assert result.exit_code == 0
-    assert "fetch" in result.output
+    assert "download" in result.output
     assert "build" in result.output
+
+
+def test_mccallum2025_help() -> None:
+    runner = CliRunner()
+    result = runner.invoke(cli, ["mccallum2025", "--help"])
+    assert result.exit_code == 0
+    assert "download" in result.output
 
 
 def test_project_init(tmp_path) -> None:
@@ -27,3 +34,4 @@ def test_project_init(tmp_path) -> None:
     assert result.exit_code == 0
     assert out.exists()
     assert "[rezaei2024]" in out.read_text()
+    assert "[mccallum2025]" in out.read_text()
